@@ -1,0 +1,110 @@
+{
+  "name": "GMI Cloud n8n AI Agent",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "I need to buy 17 USB cables at $43 each, then add a $128 shipping fee. Use the Calculator tool for the arithmetic (do not do the math in your head). First compute 17 * 43, then add 128 to that result in a second calculator call. Finally tell me the total in dollars and whether that total is even or odd.",
+        "options": {
+          "systemMessage": "You are a careful assistant. Always use the Calculator tool for any arithmetic. Make one calculation per tool call so the steps are easy to follow. After the tool results come back, give a short, clear final answer."
+        }
+      },
+      "id": "agent",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        280,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "Qwen/Qwen3.8-Flash",
+        "options": {
+          "temperature": 0,
+          "maxTokens": 1024
+        }
+      },
+      "id": "model",
+      "name": "GMI Cloud Chat Model",
+      "type": "n8n-nodes-gmicloud.lmChatGmiCloud",
+      "typeVersion": 1,
+      "position": [
+        200,
+        560
+      ],
+      "credentials": {
+        "gmiCloudApi": {
+          "id": "YOUR_GMI_CLOUD_CREDENTIAL_ID",
+          "name": "GMI Cloud API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "calc",
+      "name": "Calculator",
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        440,
+        560
+      ]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GMI Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "description": "AI Agent that uses the GMI Cloud Chat Model community node plus the built-in Calculator tool. Import into n8n, then attach your GMI Cloud API credential to the chat model node.",
+    "tutorialModel": "Qwen/Qwen3.8-Flash"
+  },
+  "pinData": {}
+}
